@@ -1,0 +1,4 @@
+
+// Doesn't work with cities with composite names yet
+// Country doesn't work sometimes, population other times
+// Lat/Long not working for Barcelona/Tokyo?

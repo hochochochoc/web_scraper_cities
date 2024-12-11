@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Header from "./components/header/Header";
-import CountryMapsCarousel from "./components/maps/Maps";
-import MobileMenu from "../components/Menu";
+import ScraperDisplay from "./components/scaper/Scraper";
+import ScraperDisplayCountries from "./components/scaper/ScraperCountries";
 
 export default function MenuPage() {
   const [mapState, setMapState] = useState("countries");
@@ -10,12 +10,9 @@ export default function MenuPage() {
       <div className="flex flex-row justify-center space-x-10">
         <Header />
       </div>
-      <div className="mb-3 flex flex-col space-y-3">
-        {mapState === "countries" && <CountryMapsCarousel />}
-
-        <div className="md:hidden">
-          <MobileMenu />
-        </div>
+      <div className="mt-20 flex flex-col space-y-3 text-center">
+        <ScraperDisplay />
+        <ScraperDisplayCountries />
       </div>
     </div>
   );

@@ -98,30 +98,6 @@ export default countryList;
 // Karaganda
 
 // To add:
-// Kyzylorda
-// Semey
-// Oskemen
 
-// Petropavl
-// Kokshetau
-// Atyrau
-// Aktau
-// Zhanaozen
-
-// Boranqul
-// Shalkar
-// Turkistan
-// Shu
-// Arkalyk
-
-// Stepnogorsk
-// Ekibastuz
-// Kachiry
-// Altai
-// Zaysan
-
-// Aksuat
-// Usharal
-// Zharkent
-// Balkhash
-// Zezqazghan
+// Boranqul -- didn't work
+// Aksuat -- no

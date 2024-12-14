@@ -48,6 +48,25 @@ export default {
   plugins: [
     require("tailwindcss-animate"),
     require("tailwind-scrollbar-hide"),
+    function ({ addComponents }) {
+      addComponents({
+        ".scrollbar-custom": {
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgb(209 213 219) transparent",
+          "&::-webkit-scrollbar": {},
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgb(209 213 219)",
+            borderRadius: "20px",
+            "&:hover": {
+              backgroundColor: "rgb(156 163 175)",
+            },
+          },
+        },
+      });
+    },
     function ({ addBase, theme }) {
       let allColors = flattenColorPalette(theme("colors"));
       let newVars = Object.fromEntries(

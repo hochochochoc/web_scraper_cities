@@ -20,8 +20,9 @@ async function scrapeCityData(cityName) {
 
     let country = null;
     let population = null;
+    let region = null;
 
-    // Find country in infobox
+    // Find country and region in infobox
     $(".infobox")
       .find("tr")
       .each((i, row) => {
@@ -33,68 +34,86 @@ async function scrapeCityData(cityName) {
         } else if (label.includes("country") && !country) {
           country = value.split("[")[0].trim();
         }
+
+        // Look for region information
+        if (
+          !region &&
+          (label.includes("province") ||
+            label.includes("region") ||
+            label.includes("state") ||
+            label.includes("prefecture") ||
+            label.includes("territory") ||
+            label.includes("administrative division") ||
+            label.includes("district") ||
+            label.includes("county"))
+        ) {
+          const possibleRegion = value.split("[")[0].trim();
+          // Avoid getting coordinates or other non-region information
+          if (
+            possibleRegion &&
+            !possibleRegion.includes("°") &&
+            !possibleRegion.includes("km") &&
+            !possibleRegion.includes("mi") &&
+            possibleRegion.length < 100
+          ) {
+            region = possibleRegion;
+          }
+        }
       });
 
-    // Find population with improved priority for city population
-    let foundPopulationSection = false;
+    // If no region found, use city name as region
+    region = region || cityName;
+
+    // Rest of the population searching logic...
+
     $(".infobox")
       .find("tr")
       .each((i, row) => {
         const label = $(row).find("th").text().toLowerCase().trim();
+        const value = $(row).find("td").text().trim();
 
-        if (label === "population") {
-          foundPopulationSection = true;
-          return;
-        }
+        if (
+          label.includes("population") ||
+          label.includes("total") ||
+          label.includes("urban") ||
+          label.includes("metro")
+        ) {
+          console.log("Found population section:", label);
 
-        if (foundPopulationSection) {
-          const sublabel = $(row).find("th").text().toLowerCase().trim();
-          const value = $(row).find("td").text().trim().toLowerCase();
-          const hasNumbers = value.match(/[\d,]+/);
-
-          // Only skip if we have both numbers and area units
           const isArea =
-            hasNumbers &&
-            (value.includes("km²") ||
-              value.includes("km2") ||
-              value.includes("sq mi"));
+            value.includes("km²") ||
+            value.includes("km2") ||
+            value.includes("sq mi");
           if (isArea) {
-            return;
+            return; // Skip rows that are clearly related to area
           }
 
-          // Check for Total, City, or plain numeric population, excluding density values
-          if (
-            (sublabel.includes("total") ||
-              sublabel.includes("city") ||
-              (hasNumbers && !sublabel.includes("density"))) &&
-            !population
-          ) {
-            // Extract numbers, handling cases with years in parentheses
-            const popMatch = value.match(/[\d,]+/);
-            if (popMatch) {
-              const possiblePop = parseInt(popMatch[0].replace(/[,\s]/g, ""));
-              // Basic validation: population should be a reasonable number
-              if (possiblePop > 1000 && possiblePop < 100000000) {
-                population = possiblePop;
+          const numbers = value.match(/\d[\d,\s]*/g); // Extract numbers
+          if (numbers) {
+            for (const num of numbers) {
+              const cleanNum = parseInt(num.replace(/[\s,]/g, ""));
+              if (cleanNum > 1000 && cleanNum < 100000000) {
+                population = cleanNum;
+                return false; // Exfit loop once population is found
               }
             }
           }
-
-          // Exit population section if we hit a clearly different section
-          if (
-            label &&
-            !label.includes("city") &&
-            !label.includes("total") &&
-            !label.includes("density") &&
-            !label.includes("rank") &&
-            !label.includes("population")
-          ) {
-            foundPopulationSection = false;
+        } else if (label === "• total" || label.includes("total")) {
+          // Fallback to handle sub-label
+          const numbers = value.match(/\d[\d,\s]*/g);
+          if (numbers) {
+            for (const num of numbers) {
+              const cleanNum = parseInt(num.replace(/[\s,]/g, ""));
+              if (cleanNum > 1000 && cleanNum < 100000000) {
+                population = cleanNum;
+                return false; // Exit loop
+              }
+            }
           }
         }
       });
 
-    // If still no population found, try metro population as fallback
+    // Metro population fallback logic...
     if (!population) {
       $(".infobox")
         .find("tr")
@@ -108,7 +127,6 @@ async function scrapeCityData(cityName) {
             !label.includes("gdp") &&
             !label.includes("economy")
           ) {
-            // Only skip if we have both numbers and area units
             const isArea =
               hasNumbers &&
               (value.includes("km²") ||
@@ -118,7 +136,6 @@ async function scrapeCityData(cityName) {
               return;
             }
 
-            // Make sure we're not getting GDP values
             if (
               !value.includes("€") &&
               !value.includes("$") &&
@@ -128,7 +145,6 @@ async function scrapeCityData(cityName) {
               const popMatch = value.match(/[\d,]+/);
               if (popMatch) {
                 const possiblePop = parseInt(popMatch[0].replace(/[,\s]/g, ""));
-                // Basic validation
                 if (possiblePop > 1000 && possiblePop < 100000000) {
                   population = possiblePop;
                 }
@@ -138,9 +154,8 @@ async function scrapeCityData(cityName) {
         });
     }
 
-    // Get coordinates (unchanged)
+    // Coordinates logic (unchanged)
     const parseDMS = (dms) => {
-      // Try full format (deg, min, sec)
       let parts = dms.match(/(-?\d+)°(\d+)′(\d+)″([NSEW])/);
 
       if (parts) {
@@ -154,7 +169,6 @@ async function scrapeCityData(cityName) {
         return parseFloat(dd.toFixed(6));
       }
 
-      // Try shorter format (deg, min only)
       parts = dms.match(/(-?\d+)°(\d+)′([NSEW])/);
       if (parts) {
         const deg = parseInt(parts[1]);
@@ -182,6 +196,7 @@ async function scrapeCityData(cityName) {
     return {
       name: cityName,
       country,
+      region,
       population,
       latitude,
       longitude,
@@ -201,6 +216,107 @@ app.get("/api/city-info", async (req, res) => {
 
   try {
     const data = await scrapeCityData(city);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+async function scrapeCountryCities(countryName) {
+  try {
+    const formattedCountryName = countryName
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join("_");
+
+    // Try different possible Wikipedia page formats
+    const possibleUrls = [
+      `List_of_cities_in_${formattedCountryName}`,
+      `List_of_${formattedCountryName}_cities`,
+      `List_of_cities_and_towns_in_${formattedCountryName}`,
+    ];
+
+    let html = null;
+    let usedUrl = null;
+
+    // Try each URL until we find one that works
+    for (const urlSuffix of possibleUrls) {
+      try {
+        const response = await axios.get(
+          `https://en.wikipedia.org/wiki/${encodeURIComponent(urlSuffix)}`,
+        );
+        html = response.data;
+        usedUrl = urlSuffix;
+        break;
+      } catch (err) {
+        continue;
+      }
+    }
+
+    if (!html) {
+      throw new Error("Could not find a valid Wikipedia page for city list");
+    }
+
+    const $ = cheerio.load(html);
+    const cities = new Set();
+
+    // Look for cities in tables
+    $("table.wikitable, table.sortable").each((_, table) => {
+      $(table)
+        .find("tr")
+        .each((i, row) => {
+          if (i === 0) return; // Skip header row
+
+          // Try to find city name in the first few columns
+          const cols = $(row).find("td");
+          for (let i = 0; i < Math.min(3, cols.length); i++) {
+            const text = $(cols[i])
+              .text()
+              .trim()
+              .split("[")[0] // Remove references
+              .split("(")[0] // Remove parentheticals
+              .trim();
+
+            if (text && text.length > 1 && !text.match(/^\d/)) {
+              cities.add(text);
+              break;
+            }
+          }
+        });
+    });
+
+    // If no cities found in tables, try lists
+    if (cities.size === 0) {
+      $("ul li, ol li").each((_, item) => {
+        const text = $(item).text().trim().split("[")[0].split("(")[0].trim();
+
+        if (text && text.length > 1 && !text.match(/^\d/)) {
+          cities.add(text);
+        }
+      });
+    }
+
+    return Array.from(cities)
+      .slice(0, 30)
+      .map((city) => ({
+        name: city,
+        country: countryName,
+      }));
+  } catch (error) {
+    console.error("Error scraping Wikipedia:", error);
+    throw new Error(`Failed to scrape city list for ${countryName}`);
+  }
+}
+
+app.get("/api/country-cities", async (req, res) => {
+  const { country } = req.query;
+
+  if (!country) {
+    return res.status(400).json({ error: "Country parameter is required" });
+  }
+
+  try {
+    const data = await scrapeCountryCities(country);
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });

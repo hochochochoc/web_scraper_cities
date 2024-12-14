@@ -1,21 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Header from "./components/header/Header";
-import CountryMapsCarousel from "./components/maps/Maps";
-import MobileMenu from "../components/Menu";
+import ScraperDisplay from "./components/scaper/Scraper";
+import ScraperDisplayCountries from "./components/scaper/CityScraper";
+import PendingApproval from "./components/scaper/PendingApproval";
+import DatabaseCitiesList from "./components/scaper/DataBaseCitiesList";
 
 export default function MenuPage() {
-  const [mapState, setMapState] = useState("countries");
+  const [approvedCities, setApprovedCities] = useState([]);
+  const [databaseRefreshTrigger, setDatabaseRefreshTrigger] = useState(0);
+  const [searchCountry, setSearchCountry] = useState("");
+  const scraperRef = useRef();
+
+  const handleCitySelect = (cityName) => {
+    if (scraperRef.current) {
+      scraperRef.current.searchCity(cityName);
+    }
+  };
+
+  const handleCitySaved = () => {
+    setDatabaseRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleApproveCity = (cityData) => {
+    setApprovedCities((prev) => [...prev, cityData]);
+  };
+
+  const handleCountrySearch = (country) => {
+    setSearchCountry(country);
+  };
+
   return (
-    <div className="flex h-screen w-auto flex-col bg-gradient-to-b from-egg to-gray-800">
+    <div className="flex h-screen w-auto flex-col bg-gradient-to-br from-slate-50 to-gray-100 px-10">
       <div className="flex flex-row justify-center space-x-10">
         <Header />
       </div>
-      <div className="mb-3 flex flex-col space-y-3">
-        {mapState === "countries" && <CountryMapsCarousel />}
-
-        <div className="md:hidden">
-          <MobileMenu />
+      <div className="grid min-h-0 flex-1 grid-cols-3 gap-4">
+        <div className="flex min-h-0 flex-col gap-4">
+          <ScraperDisplayCountries
+            onCitySelect={handleCitySelect}
+            onCountrySearch={handleCountrySearch}
+          />
+          <ScraperDisplay ref={scraperRef} onApproveCity={handleApproveCity} />
         </div>
+
+        <PendingApproval
+          approvedCities={approvedCities}
+          onCitiesChange={setApprovedCities}
+          onCitySaved={handleCitySaved}
+        />
+
+        <DatabaseCitiesList
+          searchCountry={searchCountry}
+          refreshTrigger={databaseRefreshTrigger}
+        />
       </div>
     </div>
   );

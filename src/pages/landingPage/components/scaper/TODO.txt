@@ -1,4 +1,5 @@
 
-// Doesn't work with cities with composite names yet
-// Country doesn't work sometimes, population other times
-// Lat/Long not working for Barcelona/Tokyo?
+// Make commits possible
+// Map of city coordinates
+// Make modifications of already added cities easy
+// Alert of Faulty cities/ cities that are too close to each other

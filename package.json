@@ -14,9 +14,10 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-tooltip": "^1.1.5",
     "animate.css": "^4.1.1",
     "autoprefixer": "^10.4.20",
-    "class-variance-authority": "^0.7.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "edmonds-blossom": "^1.0.0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@shadcn/ui": "^0.0.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

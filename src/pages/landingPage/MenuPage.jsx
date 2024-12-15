@@ -9,6 +9,7 @@ export default function MenuPage() {
   const [approvedCities, setApprovedCities] = useState([]);
   const [databaseRefreshTrigger, setDatabaseRefreshTrigger] = useState(0);
   const [searchCountry, setSearchCountry] = useState("");
+  const [showMap, setShowMap] = useState(false);
   const scraperRef = useRef();
 
   const handleCitySelect = (cityName) => {
@@ -27,6 +28,10 @@ export default function MenuPage() {
 
   const handleCountrySearch = (country) => {
     setSearchCountry(country);
+  };
+
+  const handleToggleMap = () => {
+    setShowMap(!showMap);
   };
 
   return (

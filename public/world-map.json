@@ -134,10 +134,14 @@
         },
         {
           "type": "Polygon",
-          "arcs": [[112, 113, 114, 115]],
+          "arcs": [
+            [112, 113, 114, 115],
+            [-115, -581, -583, 583]
+          ],
           "id": "706",
           "properties": { "name": "Somalia" }
         },
+
         {
           "type": "Polygon",
           "arcs": [[-3, 116, 117, 118, -113, 119]],
@@ -1108,11 +1112,7 @@
           "id": "262",
           "properties": { "name": "Djibouti" }
         },
-        {
-          "type": "Polygon",
-          "arcs": [[-115, -581, -583, 583]],
-          "properties": { "name": "Somaliland" }
-        },
+
         {
           "type": "Polygon",
           "arcs": [[-11, 584, -110, 585, -117]],

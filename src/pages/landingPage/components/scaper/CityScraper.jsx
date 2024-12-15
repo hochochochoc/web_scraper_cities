@@ -37,7 +37,7 @@ const ScraperDisplayCountries = ({ onCountrySearch, onCitySelect }) => {
     <div className="flex max-h-[calc(100vh-25.8rem)] min-h-0 flex-col rounded-lg border border-gray-200/50 bg-white/70 shadow-lg shadow-gray-100/50 backdrop-blur-sm">
       <div className="border-b border-gray-100 p-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Cities of Country</h2>
+          <h2 className="font-semibold text-gray-900">Available Cities</h2>
           <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-sm font-medium text-emerald-700">
             {cities.length} results
           </span>

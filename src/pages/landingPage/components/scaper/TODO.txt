@@ -1,5 +1,3 @@
-
-// Make commits possible
 // Map of city coordinates
 // Make modifications of already added cities easy
-// Alert of Faulty cities/ cities that are too close to each other
+// Alert of Faulty cities/ cities that are too close to each other --done

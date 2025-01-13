@@ -28,12 +28,12 @@ export default function Header() {
       <div className="flex w-full items-center justify-between px-4 py-4">
         <div
           onClick={() => navigate("/")}
-          className="text-lg font-extrabold text-white md:text-2xl"
+          className="text-lg font-extrabold text-gray-900 md:text-2xl"
         >
-          TSP Explorer
+          GeoCities Webscraper
         </div>
 
-        <div className="ml-auto hidden space-x-3 text-white md:flex md:text-lg">
+        <div className="ml-auto hidden space-x-3 text-white/0 md:flex md:text-lg">
           <button
             className={` ${location.pathname === "/tutorial" ? "font-semibold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" : ""}`}
             onClick={() => {
@@ -77,7 +77,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex items-center md:text-lg">
+        <div className="md:text-md flex items-center">
           {userLoggedIn ? (
             <button
               onClick={() => {
@@ -85,7 +85,7 @@ export default function Header() {
                   navigate("/menu");
                 });
               }}
-              className={`relative my-1 mr-8 flex max-h-9 justify-center px-1 text-white before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-blue-200 before:transition-all before:duration-500 before:ease-out hover:bg-gray-200 active:scale-95 ${
+              className={`relative my-1 mr-8 flex max-h-9 justify-center px-1 text-gray-900 before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-blue-200 before:transition-all before:duration-500 before:ease-out hover:bg-gray-200 active:scale-95 ${
                 borderAnimation ? "before:w-full" : "before:w-0"
               }`}
             >
@@ -96,7 +96,7 @@ export default function Header() {
               onClick={() => {
                 navigate("/login");
               }}
-              className={`relative my-1 mr-8 flex max-h-9 justify-center px-1 text-white before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-blue-300 before:transition-all before:duration-500 before:ease-out hover:bg-gray-200 active:scale-95 ${
+              className={`relative my-1 mr-8 flex max-h-9 justify-center px-1 text-gray-900 before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-blue-300 before:transition-all before:duration-500 before:ease-out hover:bg-gray-200 active:scale-95 ${
                 borderAnimation ? "before:w-full" : "before:w-0"
               }`}
             >
@@ -109,10 +109,10 @@ export default function Header() {
             size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-            className="relative h-6 w-6 text-white"
+            className="relative h-4 w-4 text-gray-900"
           >
             <Menu
-              className={`absolute !h-7 !w-7 transition-all ${
+              className={`absolute !h-6 !w-6 transition-all ${
                 sidebarOpen
                   ? "rotate-90 scale-0 opacity-0"
                   : "rotate-0 scale-100 opacity-100"

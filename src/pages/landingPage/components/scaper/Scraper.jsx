@@ -238,7 +238,7 @@ const ScraperDisplay = forwardRef(({ onApproveCity }, ref) => {
       <div className="px-3 pb-3">
         <button
           onClick={() => onApproveCity(cityData)}
-          className="w-full rounded bg-blue-500 px-3 py-1.5 text-white transition-colors hover:bg-blue-600"
+          className="w-full rounded bg-[#303030] px-3 py-1.5 text-white transition-colors hover:bg-gray-600"
         >
           Submit
         </button>

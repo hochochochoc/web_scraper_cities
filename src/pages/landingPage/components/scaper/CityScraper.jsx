@@ -1,22 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const ScraperDisplayCountries = ({ onCountrySearch, onCitySelect }) => {
+const ScraperDisplayCountries = ({
+  onCountrySearch,
+  onCitySelect,
+  searchTerm,
+}) => {
   const [countryName, setCountryName] = useState("");
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  // Add effect to handle searchTerm changes
+  useEffect(() => {
+    if (searchTerm) {
+      setCountryName(searchTerm);
+      handleSearch(null, searchTerm);
+    }
+  }, [searchTerm]);
+
+  const handleSearch = async (e, searchValue = countryName) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setError(null);
     setCities([]);
-    onCountrySearch(countryName);
+    onCountrySearch(searchValue);
 
     try {
       const response = await fetch(
         `http://localhost:3001/api/country-cities?country=${encodeURIComponent(
-          countryName,
+          searchValue,
         )}`,
       );
 
@@ -42,7 +54,7 @@ const ScraperDisplayCountries = ({ onCountrySearch, onCitySelect }) => {
             {cities.length} results
           </span>
         </div>
-        <div className="mt-2">
+        {/* <div className="mt-2">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="text"
@@ -52,7 +64,7 @@ const ScraperDisplayCountries = ({ onCountrySearch, onCitySelect }) => {
               className="flex-1 rounded-md border border-gray-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
             />
           </form>
-        </div>
+        </div> */}
       </div>
 
       <div className="scrollbar-custom min-h-0 flex-1 space-y-1 overflow-y-auto p-2">

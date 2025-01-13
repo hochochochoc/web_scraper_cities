@@ -143,7 +143,7 @@ const ApprovedCityCard = ({ cityData, onDelete, onUpdate, onSave }) => {
       {isExpanded && (
         <div
           ref={cardRef}
-          className="fixed z-50 rounded-lg border border-gray-600 bg-blue-200 p-3 shadow-lg"
+          className="fixed z-50 rounded-lg border border-gray-600 bg-blue-200/90 p-3 shadow-lg"
           style={{
             left: `${document.getElementById(cityData.name)?.getBoundingClientRect().right - 460}px`,
             top: `${document.getElementById(cityData.name)?.getBoundingClientRect().top - 140}px`,
@@ -282,7 +282,7 @@ const PendingApproval = ({ approvedCities, onCitiesChange, onCitySaved }) => {
           <button
             onClick={handleSaveAll}
             disabled={isSaving}
-            className="w-full rounded bg-blue-500 px-3 py-1.5 text-white transition-colors hover:bg-blue-600 disabled:bg-blue-400"
+            className="w-full rounded bg-[#303030] px-3 py-1.5 text-white transition-colors hover:bg-gray-600 disabled:bg-blue-400"
           >
             {isSaving ? "Saving..." : "Save all to Database"}
           </button>

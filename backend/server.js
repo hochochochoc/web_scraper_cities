@@ -94,7 +94,7 @@ async function scrapeCityData(cityName) {
               const cleanNum = parseInt(num.replace(/[\s,]/g, ""));
               if (cleanNum > 1000 && cleanNum < 100000000) {
                 population = cleanNum;
-                return false; // Exfit loop once population is found
+                return false; // Exit loop once population is found
               }
             }
           }
@@ -154,7 +154,7 @@ async function scrapeCityData(cityName) {
         });
     }
 
-    // Coordinates logic (unchanged)
+    // Coordinates logic
     const parseDMS = (dms) => {
       let parts = dms.match(/(-?\d+)°(\d+)′(\d+)″([NSEW])/);
 
@@ -224,29 +224,86 @@ app.get("/api/city-info", async (req, res) => {
 
 async function scrapeCountryCities(countryName) {
   try {
+    // Define terms to exclude
+    const excludedTerms = [
+      "state's largest city",
+      "federal capital",
+      "state capital",
+      "largest city",
+      "administrative center",
+      "administrative division",
+      "metropolitan area",
+      "administrative headquarters",
+      "Direct-administered municipality",
+      "Prefecture-level city Sub-provincial city Ordinary prefectural city",
+      "County-level city Sub-prefectural city Ordinary county city",
+      "Special administrative region",
+      "Core city",
+      "Former special city",
+      "City",
+      "Special ward of Tokyo",
+      "政令指定都市",
+      "中核市",
+      "特例市",
+      "特別区",
+      "直辖市",
+      "副省级市",
+      "县级市 副地级市 普通县级市",
+      "特别行政区",
+      "地级市 副省级市 普通地级市",
+      "县级市",
+      "副地级市",
+      "普通县级市",
+    ];
+
+    // Helper function to check if a city name should be excluded
+    function shouldExcludeCity(cityName) {
+      const normalizedName = cityName.toLowerCase();
+      if (
+        normalizedName.endsWith(" city") ||
+        normalizedName.startsWith("city ")
+      ) {
+        return true;
+      }
+      return excludedTerms.some((term) =>
+        normalizedName.includes(term.toLowerCase()),
+      );
+    }
+
+    // Helper function to extract population from a string
+    function extractPopulation(text) {
+      if (!text) return null;
+      const numbers = text.match(/[\d,]+/g);
+      if (numbers) {
+        const possiblePop = parseInt(numbers[0].replace(/[,\s]/g, ""));
+        if (possiblePop > 1000 && possiblePop < 100000000) {
+          return possiblePop;
+        }
+      }
+      return null;
+    }
+
     const formattedCountryName = countryName
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join("_");
 
-    // Try different possible Wikipedia page formats
     const possibleUrls = [
+      `List_of_cities_in_${formattedCountryName}_by_population`,
+      `List_of_${formattedCountryName}_cities_by_population`,
+      `List_of_cities_and_towns_in_${formattedCountryName}_by_population`,
       `List_of_cities_in_${formattedCountryName}`,
       `List_of_${formattedCountryName}_cities`,
       `List_of_cities_and_towns_in_${formattedCountryName}`,
     ];
 
     let html = null;
-    let usedUrl = null;
-
-    // Try each URL until we find one that works
     for (const urlSuffix of possibleUrls) {
       try {
         const response = await axios.get(
           `https://en.wikipedia.org/wiki/${encodeURIComponent(urlSuffix)}`,
         );
         html = response.data;
-        usedUrl = urlSuffix;
         break;
       } catch (err) {
         continue;
@@ -258,50 +315,117 @@ async function scrapeCountryCities(countryName) {
     }
 
     const $ = cheerio.load(html);
-    const cities = new Set();
+    const citiesArray = [];
 
     // Look for cities in tables
     $("table.wikitable, table.sortable").each((_, table) => {
+      let populationColumnIndex = -1;
+
+      // Try to find population column
+      $(table)
+        .find("th")
+        .each((index, header) => {
+          const headerText = $(header).text().toLowerCase().trim();
+          if (
+            headerText.includes("population") ||
+            headerText.includes("demographic") ||
+            headerText.includes("inhabitants")
+          ) {
+            populationColumnIndex = index;
+          }
+        });
+
       $(table)
         .find("tr")
         .each((i, row) => {
           if (i === 0) return; // Skip header row
 
-          // Try to find city name in the first few columns
           const cols = $(row).find("td");
-          for (let i = 0; i < Math.min(3, cols.length); i++) {
-            const text = $(cols[i])
-              .text()
-              .trim()
-              .split("[")[0] // Remove references
-              .split("(")[0] // Remove parentheticals
-              .trim();
+          let cityName = null;
+          let population = null;
 
-            if (text && text.length > 1 && !text.match(/^\d/)) {
-              cities.add(text);
+          // Try to find city name in the first few columns
+          for (let i = 0; i < Math.min(3, cols.length); i++) {
+            // Get direct text content without any formatting or hidden elements
+            let text = $(cols[i])
+              .find("a") // Look for the actual city name link
+              .first() // Take the first link if multiple exist
+              .text() // Get its text
+              .trim(); // Clean up whitespace
+
+            // If no link found, try getting direct text
+            if (!text) {
+              text = $(cols[i])
+                .clone() // Clone to avoid modifying original
+                .find("*") // Find all elements
+                .remove() // Remove them
+                .end() // Go back to cloned element
+                .text() // Get remaining text
+                .trim(); // Clean up whitespace
+            }
+
+            if (
+              text &&
+              text.length > 1 &&
+              !text.match(/^\d/) &&
+              !shouldExcludeCity(text)
+            ) {
+              cityName = text;
               break;
             }
+          }
+
+          // If we found a valid city name and know where population data is
+          if (cityName && populationColumnIndex >= 0) {
+            const popText = $(cols[populationColumnIndex]).text().trim();
+            population = extractPopulation(popText);
+          }
+
+          if (cityName) {
+            citiesArray.push({
+              name: cityName,
+              population: population,
+              country: countryName,
+            });
           }
         });
     });
 
-    // If no cities found in tables, try lists
-    if (cities.size === 0) {
+    // If no cities found in tables, try lists (without population data)
+    if (citiesArray.length === 0) {
       $("ul li, ol li").each((_, item) => {
         const text = $(item).text().trim().split("[")[0].split("(")[0].trim();
 
-        if (text && text.length > 1 && !text.match(/^\d/)) {
-          cities.add(text);
+        if (
+          text &&
+          text.length > 1 &&
+          !text.match(/^\d/) &&
+          !shouldExcludeCity(text)
+        ) {
+          citiesArray.push({
+            name: text,
+            population: null,
+            country: countryName,
+          });
         }
       });
     }
 
-    return Array.from(cities)
-      .slice(0, 30)
+    // Sort by population if available, otherwise return unsorted
+    const sortedCities = citiesArray
+      .sort((a, b) => {
+        if (a.population && b.population) {
+          return b.population - a.population;
+        }
+        return 0; // Keep original order if population not available
+      })
+      .slice(0, 40)
       .map((city) => ({
-        name: city,
-        country: countryName,
+        name: city.name,
+        country: city.country,
       }));
+
+    return sortedCities;
   } catch (error) {
     console.error("Error scraping Wikipedia:", error);
     throw new Error(`Failed to scrape city list for ${countryName}`);

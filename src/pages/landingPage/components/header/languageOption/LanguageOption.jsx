@@ -31,7 +31,7 @@ const LanguageOption = () => {
     <div className="language-selector relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-1 text-white hover:text-gray-200"
+        className="flex items-center space-x-1 text-gray-900 hover:text-gray-200"
       >
         <span className="text-[14px]">
           {languages.find((lang) => lang.code === i18n.language)?.label || "EN"}

@@ -296,7 +296,7 @@ const DatabaseCitiesList = ({
             />
           </div>
         </div>
-        <div className="mt-2">
+        {/* <div className="mt-2">
           <div className="relative">
             <Search
               size={16}
@@ -311,7 +311,7 @@ const DatabaseCitiesList = ({
               className="w-full rounded-md border border-gray-200 py-1.5 pl-8 pr-3 text-sm focus:border-blue-500 focus:outline-none"
             />
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="scrollbar-custom min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
         {isLoading ? (
@@ -388,11 +388,11 @@ const DatabaseCitiesList = ({
               {expandedCity === city.id && (
                 <div
                   ref={cardRef}
-                  className="fixed z-50 w-60 rounded-lg border border-gray-600 bg-blue-200 p-3 shadow-lg"
+                  className="fixed z-50 w-60 rounded-lg border border-gray-600 bg-blue-200/90 p-3 shadow-lg"
                   style={{
                     left: `${
                       document.getElementById(city.id)?.getBoundingClientRect()
-                        .right - 1180
+                        .right - 1280
                     }px`,
                     top: `${
                       document.getElementById(city.id)?.getBoundingClientRect()
@@ -455,7 +455,7 @@ const DatabaseCitiesList = ({
             {showMap ? <Minimize size={16} /> : <Maximize size={16} />}
           </button>
           {showMap && (
-            <div className="h-[400px]">
+            <div className="mx-2 mb-3 h-[400px]">
               <CountryMap countryName={localSearchCountry} cities={cities} />
             </div>
           )}

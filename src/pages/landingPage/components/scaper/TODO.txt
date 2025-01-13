@@ -1,3 +1,7 @@
-// Map of city coordinates
-// Make modifications of already added cities easy
-// Alert of Faulty cities/ cities that are too close to each other --done
+
+
+// procedural loading
+// procedural loading of cities effect
+// header
+// map margins -- done
+// make the searchbar work actually instead of the ones to the sides -- done
